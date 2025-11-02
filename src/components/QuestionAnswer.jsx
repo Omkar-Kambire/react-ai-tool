@@ -10,7 +10,7 @@ const QuestionAnswer = ({ item, index }) => {
       >
         {item.type === "q" ? (
           <li
-            className="text-right p-1 border-8 dark:bg-zinc-700 bg-green-200 dark:border-zinc-700 border-green-200 rounded-tl-3xl rounded-br-3xl rounded-bl-3xl w-fit"
+            className="text-right px-4 py-2 dark:bg-zinc-700 bg-indigo-100 dark:text-zinc-100 text-slate-800 rounded-tl-3xl rounded-br-3xl rounded-bl-3xl w-fit max-w-[80%] flex items-center justify-center shadow-sm"
             key={index}
           >
             <Answers

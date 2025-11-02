@@ -13,6 +13,8 @@ const App = () => {
   const [selectedHistory, setSelectedHistory] = useState("");
   const scrollToAns = useRef();
   const [loader, setLoader] = useState(false);
+  // sidebar open/collapsed state
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const askQuestion = async () => {
     if (!question && !selectedHistory) {
@@ -112,30 +114,60 @@ const App = () => {
   // Dark mode code
   const [darkMode, setDarkMode] = useState('dark');
   useEffect(() => {
-    if(darkMode === 'dark') {
+    if (darkMode === 'dark') {
       document.documentElement.classList.add('dark');
-    }else{
+    } else {
       document.documentElement.classList.remove('dark');
     }
-  },[darkMode])
+  }, [darkMode]);
 
   return (
-    <div className={darkMode=='dark' ? "dark" : "light"}>
-    <div className="grid grid-cols-5 h-screen text-center">
-      <select onChange={(e) => setDarkMode(e.target.value)} className="fixed dark:text-white text-zinc-800 dark:bg-zinc-800 bg-amber-100 bottom-0 p-3 m-2 ml-5 rounded" defaultValue={"Select theme"}>
-        <option value="Select theme" disabled className="dark:bg-zinc-800 dark:text-white text-zinc-800">Change theme</option>
-        <option value="dark" className="dark:bg-zinc-800 dark:text-white text-zinc-800">Dark</option>
-        <option value="light" className="dark:bg-zinc-800 dark:text-white text-zinc-800">Light</option>
-      </select>
-      <RecentSearch
-        clearHistory={clearHistory}
-        recentHistory={recentHistory}
-        setSelectedHistory={setSelectedHistory}
-        setRecentHistory={setRecentHistory}
-      />
+    <div className={darkMode == 'dark' ? 'dark bg-zinc-900 min-h-screen' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-slate-800 min-h-screen'}>
+      <div className="grid grid-cols-5 h-screen text-center">
+        {/* Theme selector - moved to top-right to avoid bottom overlap on mobile */}
+        <select
+          value={darkMode}
+          onChange={(e) => setDarkMode(e.target.value)}
+          className="fixed right-3 top-3 z-50 dark:text-white text-slate-700 dark:bg-zinc-800 bg-white/80 backdrop-blur-sm p-2 rounded-lg shadow-md border border-slate-200 dark:border-zinc-700"
+        >
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
 
-      {/* Right side */}
-      <div className="col-span-4 p-10 flex flex-col h-screen">
+        {/* Sidebar toggle button (hamburger) - visible when sidebar is closed */}
+        {!sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="fixed left-3 top-3 z-50 bg-zinc-800 text-white p-2 rounded shadow-lg"
+            aria-label="Open sidebar"
+          >
+            ☰
+          </button>
+        )}
+
+        {/* Backdrop for small-screen sidebar (click to close) */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/40 z-30 md:hidden"
+          />
+        )}
+
+        {/* Sidebar: fixed overlay on small screens, normal column on md+ */}
+        <div
+          className={`${sidebarOpen ? 'fixed left-0 top-0 bottom-0 w-64 z-40 transform translate-x-0 md:relative md:col-span-1' : 'fixed left-0 top-0 bottom-0 w-64 z-40 transform -translate-x-full'} transition-transform duration-300 ease-in-out`}
+        >
+          <RecentSearch
+            clearHistory={clearHistory}
+            recentHistory={recentHistory}
+            setSelectedHistory={setSelectedHistory}
+            setRecentHistory={setRecentHistory}
+            setSidebarOpen={setSidebarOpen}
+          />
+        </div>
+
+        {/* Right side */}
+  <div className={`${sidebarOpen ? 'col-span-5 md:col-span-4' : 'col-span-5'} p-10 flex flex-col h-full min-h-0`}>
         <h1 className="text-3xl bg-clip-text text-transparent bg-gradient-to-r from-green-700 to-violet-700 mb-4 font-semibold">
           AI Chat Bot
         </h1>
@@ -163,8 +195,8 @@ const App = () => {
         )}
 
         {/* Answers scroll area */}
-        <div ref={scrollToAns} className="flex-1 overflow-y-auto mb-4">
-          <div className="dark:text-zinc-300 text-zinc-800">
+        <div ref={scrollToAns} className="flex-1 overflow-y-auto mb-4 min-h-0">
+          <div className="dark:text-zinc-300 text-slate-700">
             <ul>
               {result.map((item, index) => (
                 <QuestionAnswer key={index} item={item} />
@@ -174,15 +206,21 @@ const App = () => {
         </div>
 
         {/* Input at bottom */}
-        <div className="dark:text-white dark:bg-zinc-800 bg-blue-100 text-black w-1/2 m-auto p-1 pl-2 pr-5 rounded-4xl border border-zinc-700 flex h-14">
+        <div className="dark:text-white dark:bg-zinc-800 bg-white/90 backdrop-blur-sm text-slate-800 w-full md:w-1/2 m-auto p-2 rounded-4xl border border-slate-200 dark:border-zinc-700 flex items-center h-14 relative shadow-lg">
           <input
             onKeyDown={isEnter}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask me anything..."
-            className="w-full h-full p-2 outline-none"
+            className="w-full min-w-0 h-full p-2 pr-20 outline-none bg-transparent placeholder:text-slate-400 dark:placeholder:text-zinc-500"
           />
-          <button onClick={askQuestion}>Ask</button>
+          <button
+            onClick={askQuestion}
+            className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-2 rounded-full text-white bg-gradient-to-r from-green-600 to-violet-600 hover:from-green-500 hover:to-violet-500"
+            aria-label="Ask"
+          >
+            Ask
+          </button>
         </div>
       </div>
     </div>
